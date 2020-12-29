@@ -60,20 +60,36 @@ def solve_lasso(X, y, lamb = 0.25, num_iterations = 10, rho = 1):
         alpha_old = alpha
         #alpha = coordinate_descent(alpha, beta, omega, rho, lamb)
         alpha = soft_thresholding(beta, omega, rho, lamb)
-        print(alpha.shape)
+        #print(alpha.shape)
 
         # STEP 3: Update nu_t
-        omega = omega + rho*(beta - alpha)
+        #omega = omega + rho*(beta - alpha)
+        omega = omega + beta - alpha
         val = 0.5*np.linalg.norm(X.dot(beta) - y, ord=2)**2 + lamb*np.linalg.norm(beta, ord=1)
-        print(val)
+        print(iteration, val)
 
-        primal_residual = beta + alpha
+        primal_residual = beta - alpha
         primal_residual = np.linalg.norm(primal_residual, ord=2)
-        dual_residual = rho*(alpha - alpha_old)
+        dual_residual = -rho*(alpha - alpha_old)
         dual_residual = np.linalg.norm(dual_residual, ord=2)
 
         primal_residuals.append(primal_residual)
         dual_residuals.append(dual_residual)
         #betas.append(beta)
+        ### STOP Criterion
+        ABSTOL = 1e-3
+        RELTOL = 1e-4
+        primal_residual_euc = primal_residual
+        dual_residual_euc = dual_residual
+        beta_euc = np.linalg.norm(beta, ord=2)
+        
+        print(primal_residual_euc)
+        if(primal_residual_euc <= ABSTOL* np.sqrt(n) + RELTOL*beta_euc 
+        and dual_residual_euc <= ABSTOL* np.sqrt(p) + RELTOL*np.linalg.norm(rho*alpha, ord=2)):
+            break
+        """
+        if(dual_residual_euc <= ABSTOL* np.sqrt(p) + RELTOL*np.linalg.norm(rho*alpha, ord=2)):
+            break
+        """
     
     return primal_residuals, dual_residuals, beta

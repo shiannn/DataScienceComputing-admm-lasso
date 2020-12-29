@@ -4,6 +4,8 @@ from sklearn.linear_model import LogisticRegression
 from lasso_admm import lasso_admm
 from solve_lasso import solve_lasso
 
+import matplotlib.lines as mlines
+
 def data_generation():
     n, p = 3000, 500
     ### generate true model part
@@ -43,19 +45,27 @@ def training(beta, X, Y, iterations = 10000, tol=5*1e-6):
     return losses, grad_norms
 
 def problem1(y, X):
-    primal_residuals, dual_residuals, beta = solve_lasso(X, y, lamb = 0.3, num_iterations = 500, rho = 1)
-    print(beta.shape)
-    plt.plot(primal_residuals, label='primal_residuals')
-    plt.plot(dual_residuals, label='dual_residuals')
-    plt.legend()
-    plt.show()
+    lambdas = [0.25,0.5,0.75, 1]
+    #lambdas = np.arange(2, 10, 0.5)
+    for lamb in lambdas:
+        print(lamb)
+        primal_residuals, dual_residuals, beta = solve_lasso(X, y, lamb = lamb, num_iterations = 500, rho = 1)
+        #print(beta.shape)
+        plt.plot(primal_residuals, label='primal_residuals')
+        plt.plot(dual_residuals, label='dual_residuals')
+        plt.xlabel('number of iterations ')
+        plt.ylabel('Euclidean norm of the primal residual and dual residual')
+        plt.title(r'$\lambda = {}$'.format(lamb))
+        plt.legend()
+        plt.savefig('{}.png'.format(lamb))
+        plt.close()
 
 def problem2(y, X):
     betas = []
     lambdas = np.linspace(0.001, 5.0, num=20)
     print(lambdas)
     for lamb in lambdas:
-        primal_residuals, dual_residuals, beta = solve_lasso(X, y, lamb = lamb, num_iterations = 20, rho = 1)
+        primal_residuals, dual_residuals, beta = solve_lasso(X, y, lamb = lamb, num_iterations = 500, rho = 1)
         print(beta.shape)
         betas.append(beta)
     betas = np.concatenate(betas, axis=1)
@@ -65,34 +75,22 @@ def problem2(y, X):
     redundant_idx = [i for i in range(500) if i not in true_idx]
     plt.plot(betas.T[:, true_idx], color='r', marker='+')
     plt.plot(betas.T[:, redundant_idx], color='gray', marker='+')
+    plt.ylabel(r'$\hat{\beta}^{lasso}(\lambda)$')
+    plt.xlabel(r'$\lambda$')
+    blue_line = mlines.Line2D([], [], color='red', marker='+', markersize=15, 
+        label='100, 200, 300, 400, 500th elements')
+    plt.legend(handles=[blue_line], loc=(2/16, 2/9))
     #plt.legend()
-    plt.show()
+    #plt.show()
+    plt.savefig('problem2.png')
     
 
 def main():
-    #np.random.seed(1)
     y, X = data_generation()
     y = np.expand_dims(y, axis=1)
     print(X.shape, y.shape)
     #problem2(y, X)
     problem1(y, X)
-    
-    """
-    z, h = lasso_admm(X,y,alpha=1.,rho=1.,rel_par=1.,QUIET=False, MAX_ITER=500,ABSTOL=5e-3,RELTOL=5e-3)
-    #print(h['eps_dual'])
-    #print(h['eps_pri'])
-    dual_residual = np.array(h['eps_dual'])
-    prime_residual = np.array(h['eps_pri'])
-
-    dual_residual = dual_residual[dual_residual!=0]
-    prime_residual = prime_residual[prime_residual!=0]
-    print(dual_residual)
-    print(prime_residual)
-
-    plt.plot(dual_residual)
-    plt.plot(prime_residual)
-    plt.show()
-    """
 
 
 if __name__ == '__main__':
