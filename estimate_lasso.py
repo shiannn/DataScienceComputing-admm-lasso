@@ -22,34 +22,12 @@ def data_generation():
     
     return y, X
 
-def training(beta, X, Y, iterations = 10000, tol=5*1e-6):
-    iteration = 0
-    losses = []
-    grad_norms = []
-    loss = np.inf
-    while(iteration<iterations and loss > tol):
-        loss = loss_function(beta, X, Y)
-        print('loss', loss)
-        grad = gradient(beta, X, Y)
-        #print('grad norm', )
-        grad_norm = np.linalg.norm(grad, ord=2)
-        
-        grad = np.expand_dims(grad, 1)
-        #print('grad', grad.shape)
-        beta = beta + 0.12* grad
-        #print('beta', beta.shape)
-        iteration += 1
-        losses.append(loss)
-        grad_norms.append(grad_norm)
-    
-    return losses, grad_norms
-
 def problem1(y, X):
     lambdas = [0.25,0.5,0.75, 1]
     #lambdas = np.arange(2, 10, 0.5)
     for lamb in lambdas:
         print(lamb)
-        primal_residuals, dual_residuals, beta = solve_lasso(X, y, lamb = lamb, num_iterations = 500, rho = 1)
+        primal_residuals, dual_residuals, beta = solve_lasso(X, y, lamb = lamb, num_iterations = 500, rho = 0.5)
         #print(beta.shape)
         plt.plot(primal_residuals, label='primal_residuals')
         plt.plot(dual_residuals, label='dual_residuals')
